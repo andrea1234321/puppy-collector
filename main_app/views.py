@@ -3,17 +3,6 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Puppy
 
 
-class PuppyCreate(CreateView):
-  model= Puppy
-  fields= '__all__'
-
-class PuppyUpdate(UpdateView):
-  model: Puppy
-  fields= ['breed', 'description', 'age']
-
-class PuppyDelete(DeleteView):
-  model: Puppy
-  success_url= '/puppies/'
 
 # Define the home view
 def home(request):
@@ -31,3 +20,15 @@ def puppy_detail(request, puppy_id):
   puppy= Puppy.objects.get(id=puppy_id)
   return render(request, 'puppies/detail.html', { 'puppy': puppy })
 
+
+class PuppyCreate(CreateView):
+  model= Puppy
+  fields = '__all__'
+
+class PuppyUpdate(UpdateView):
+  model= Puppy
+  fields = ['breed', 'description', 'age']
+
+class PuppyDelete(DeleteView):
+  model= Puppy
+  success_url = '/puppies/'
