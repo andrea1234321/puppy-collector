@@ -1,6 +1,11 @@
 from django.shortcuts import render
+from django.views.generic.edit import CreateView
 from .models import Puppy
 
+
+class PuppyCreate(CreateView):
+  model= Puppy
+  fields= '__all__'
 # Define the home view
 def home(request):
   return render(request, 'home.html')
@@ -16,3 +21,4 @@ def puppy_index(request):
 def puppy_detail(request, puppy_id):
   puppy= Puppy.objects.get(id=puppy_id)
   return render(request, 'puppies/detail.html', { 'puppy': puppy })
+
