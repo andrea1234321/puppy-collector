@@ -3,11 +3,12 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Puppy, Toy
 from .forms import FeedingForm
 from django.views.generic import ListView, DetailView
+from django.contrib.auth.views import LoginView
 
 
 # Define the home view
-def home(request):
-  return render(request, 'home.html')
+class Home(LoginView):
+  template_name = 'home.html'
 
 def about(request):
   return render(request, 'about.html')
@@ -42,6 +43,9 @@ def assoc_toy(request, puppy_id, toy_id):
 class PuppyCreate(CreateView):
   model= Puppy
   fields = ['name', 'breed', 'description', 'age']
+  def form_valid(self, form):
+    form.instance.user = self.request.user
+    return super().form_valid(form)
 
 class PuppyUpdate(UpdateView):
   model= Puppy
