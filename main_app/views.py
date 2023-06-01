@@ -4,6 +4,10 @@ from .models import Puppy, Toy
 from .forms import FeedingForm
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.views import LoginView
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 # Define the home view
@@ -14,10 +18,12 @@ def about(request):
   return render(request, 'about.html')
 
 # Add new view
+@login_required
 def puppy_index(request):
-  puppies = Puppy.objects.all()
+  puppies = Puppy.objects.filter(user=request.user)
   return render(request, 'puppies/index.html', { 'puppies': puppies })
 
+@login_required
 def puppy_detail(request, puppy_id):
   puppy= Puppy.objects.get(id=puppy_id)
   toys_puppy_doesnt_have = Toy.objects.exclude(id__in = puppy.toys.all().values_list('id'))
@@ -28,6 +34,7 @@ def puppy_detail(request, puppy_id):
     'toys': toys_puppy_doesnt_have
   })
 
+@login_required
 def add_feeding(request, puppy_id):
   form = FeedingForm(request.POST)
   if form.is_valid():
@@ -36,40 +43,54 @@ def add_feeding(request, puppy_id):
     new_feeding.save()
   return redirect('puppy-detail', puppy_id=puppy_id)
 
+@login_required
 def assoc_toy(request, puppy_id, toy_id):
   Puppy.objects.get(id=puppy_id).toys.add(toy_id)
   return redirect('puppy-detail', puppy_id=puppy_id)
 
-class PuppyCreate(CreateView):
+class PuppyCreate(LoginRequiredMixin, CreateView):
   model= Puppy
   fields = ['name', 'breed', 'description', 'age']
   def form_valid(self, form):
     form.instance.user = self.request.user
     return super().form_valid(form)
 
-class PuppyUpdate(UpdateView):
+class PuppyUpdate(LoginRequiredMixin, UpdateView):
   model= Puppy
   fields = ['breed', 'description', 'age']
 
-class PuppyDelete(DeleteView):
+class PuppyDelete(LoginRequiredMixin, DeleteView):
   model= Puppy
   success_url = '/puppies/'
 
-class ToyCreate(CreateView):
+class ToyCreate(LoginRequiredMixin, CreateView):
   model = Toy
   fields = '__all__'
 
-class ToyList(ListView):
+class ToyList(LoginRequiredMixin, ListView):
   model = Toy
 
-class ToyDetail(DetailView):
+class ToyDetail(LoginRequiredMixin, DetailView):
   model = Toy
 
-class ToyUpdate(UpdateView):
+class ToyUpdate(LoginRequiredMixin, UpdateView):
   model = Toy
   fields = ['name', 'color']
 
-class ToyDelete(DeleteView):
+class ToyDelete(LoginRequiredMixin, DeleteView):
   model = Toy
   success_url = '/toys/'
 
+def signup(request):
+  error_message = ''
+  if request.method == 'POST':
+    form = UserCreationForm(request.POST)
+    if form.is_valid():
+      user = form.save()
+      login(request, user)
+      return redirect('cat-index')
+    else:
+      error_message = 'Invalid sign up - try again'
+  form = UserCreationForm()
+  context = {'form': form, 'error_message': error_message}
+  return render(request, 'signup.html', context)
