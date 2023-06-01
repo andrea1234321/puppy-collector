@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from .models import Puppy
+from .models import Puppy, Toy
 from .forms import FeedingForm
+from django.views.generic import ListView, DetailView
 
 
 # Define the home view
@@ -43,3 +44,13 @@ class PuppyUpdate(UpdateView):
 class PuppyDelete(DeleteView):
   model= Puppy
   success_url = '/puppies/'
+
+class ToyCreate(CreateView):
+  model = Toy
+  fields = '__all__'
+
+class ToyList(ListView):
+  model = Toy
+
+class ToyDetail(DetailView):
+  model = Toy
